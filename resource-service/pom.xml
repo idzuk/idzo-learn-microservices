@@ -11,7 +11,7 @@
     <groupId>ua.idzo.resource</groupId>
     <artifactId>resource</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <name>resource</name>
+    <name>resource-service</name>
     <packaging>jar</packaging>
     <description>Resource Service handles the storage and processing of MP3 files.</description>
 
