@@ -1,4 +1,4 @@
-CREATE TABLE resource_entity(
+CREATE TABLE resource (
     id   SERIAL PRIMARY KEY,
     data BYTEA NOT NULL
 );

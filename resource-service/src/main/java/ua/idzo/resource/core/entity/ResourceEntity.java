@@ -15,7 +15,6 @@ import lombok.Setter;
 @Table(name = "resource")
 public class ResourceEntity extends BaseIntegerAutoIncrementEntity {
 
-    @Lob
     @Column(nullable = false)
     private byte[] data;
 }

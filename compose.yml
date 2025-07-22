@@ -32,11 +32,11 @@ services:
     ports:
       - "8081:8080"
     environment:
+      - SERVER_PORT=8080
       - SPRING_DATASOURCE_URL=${RESOURCE_DB_URL}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - SONG_SERVICE_URL=${SONG_SERVICE_URL}
-      - LOGGING_LEVEL_ROOT=DEBUG
     depends_on:
       - resource-db
 
@@ -47,6 +47,7 @@ services:
     ports:
       - "8082:8080"
     environment:
+      - SERVER_PORT=8080
       - SPRING_DATASOURCE_URL=${SONG_DB_URL}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
