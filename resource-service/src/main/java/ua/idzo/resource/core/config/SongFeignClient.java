@@ -11,12 +11,12 @@ import ua.idzo.resource.dto.song.request.CreateSongRequest;
 import ua.idzo.resource.dto.song.response.CreateSongResponse;
 import ua.idzo.resource.dto.song.response.DeleteSongResponse;
 
-@FeignClient(name = "song", url = "${song.feign.path}/songs")
+@FeignClient(name = "${song.service-name}")
 public interface SongFeignClient {
 
-    @PostMapping
+    @PostMapping("/songs")
     ResponseEntity<CreateSongResponse> createSong(@RequestBody CreateSongRequest request);
 
-    @DeleteMapping
+    @DeleteMapping("/songs")
     ResponseEntity<DeleteSongResponse> deleteSongs(@RequestParam String id);
 }

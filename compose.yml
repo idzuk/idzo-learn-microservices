@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   resource-db:
     image: postgres:16-alpine
@@ -25,31 +27,49 @@ services:
       - ./init-scripts/song-db/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
 
+  eureka-server:
+    build:
+      context: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      - SERVER_PORT=8761
+
   resource-service:
     build:
       context: ./resource-service
     container_name: resource-service
     ports:
-      - "8081:8080"
+      - "8081:8081"
     environment:
-      - SERVER_PORT=8080
+      - SERVER_PORT=8081
       - SPRING_DATASOURCE_URL=${RESOURCE_DB_URL}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
-      - SONG_SERVICE_URL=${SONG_SERVICE_URL}
+      - SONG_SERVICE_NAME=${SONG_SERVICE_NAME}
+      - EUREKA_SERVER=${EUREKA_SERVER}
     depends_on:
       - resource-db
+      - eureka-server
 
   song-service:
     build:
       context: ./song-service
-    container_name: song-service
+###DYNAMIC
+#    ports:
+#      - "8082"
+###STATIC
+    deploy:
+      replicas: 2
     ports:
-      - "8082:8080"
+      - "8060-8065:8084"
     environment:
-      - SERVER_PORT=8080
+      - SERVER_PORT=8084
       - SPRING_DATASOURCE_URL=${SONG_DB_URL}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - EUREKA_SERVER=${EUREKA_SERVER}
     depends_on:
       - song-db
+      - eureka-server
