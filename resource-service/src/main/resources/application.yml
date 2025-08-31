@@ -11,13 +11,13 @@ spring:
 
 file-storage:
   aws:
-    region: us-east-1
+    region: ${AWS_REGION:us-east-1}
     credentials:
-      access-key: test
-      secret-key: test
+      access-key: ${AWS_ACCESS_KEY:some-access-key}
+      secret-key: ${AWS_SECRET_KEY:some-secret-key}
     s3:
-      endpoint: http://localhost:4566
-      bucket-name: your-music-bucket
+      endpoint: ${AWS_S3_URL:http://localhost:4566}
+      bucket-name: ${AWS_S3_BUCKET_NAME:song-resources}
 
 song:
   service-name: ${SONG_SERVICE_NAME:song-service}

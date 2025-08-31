@@ -1,4 +1,6 @@
 services:
+
+  #  FILE STORAGES
   localstack:
     image: localstack/localstack
     container_name: resource-storage
@@ -6,11 +8,15 @@ services:
       - "4566:4566"
     environment:
       - SERVICES=s3
-      - DEFAULT_REGION=us-east-1
+      - DEFAULT_REGION=${AWS_REGION}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
+    entrypoint:
     volumes:
+      - ./init-scripts/resource-s3:/etc/localstack/init/ready.d
       - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
 
+  #  DATABASES
   resource-db:
     image: postgres:16-alpine
     container_name: resource-db
@@ -37,6 +43,7 @@ services:
       - ./init-scripts/song-db/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
 
+  #  EUREKA SERVER
   eureka-server:
     build:
       context: ./eureka-server
@@ -46,6 +53,7 @@ services:
     environment:
       - SERVER_PORT=8761
 
+  #  RESOURCE SERVICE
   resource-service:
     build:
       context: ./resource-service
@@ -59,15 +67,23 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - SONG_SERVICE_NAME=${SONG_SERVICE_NAME}
       - EUREKA_SERVER=${EUREKA_SERVER}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - AWS_S3_URL=${AWS_S3_URL}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
     depends_on:
       - resource-db
+      - localstack
       - eureka-server
 
+  #  SONG SERVICE
   song-service:
     build:
       context: ./song-service
+    container_name: song-service
     ports:
-      - "8080"
+      - "8080:8080"
     environment:
       - SERVER_PORT=8080
       - SPRING_DATASOURCE_URL=${SONG_DB_URL}
@@ -76,4 +92,17 @@ services:
       - EUREKA_SERVER=${EUREKA_SERVER}
     depends_on:
       - song-db
+      - eureka-server
+
+  #  RESOURCE PROCESSOR
+  resource-processor:
+    build:
+      context: ./resource-processor
+    container_name: resource-processor
+    ports:
+      - "8091:8091"
+    environment:
+      - SERVER_PORT=8091
+    depends_on:
+      - localstack
       - eureka-server
