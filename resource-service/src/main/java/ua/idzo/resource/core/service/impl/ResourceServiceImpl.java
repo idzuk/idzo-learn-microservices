@@ -10,6 +10,7 @@ import ua.idzo.resource.core.exception.NotFoundRuntimeException;
 import ua.idzo.resource.core.repository.ResourceRepository;
 import ua.idzo.resource.core.service.FileStorage;
 import ua.idzo.resource.core.service.ResourceService;
+import ua.idzo.resource.core.util.MetadataExtractor;
 import ua.idzo.resource.dto.song.request.CreateSongRequest;
 import ua.idzo.resource.dto.song.response.CreateSongResponse;
 import ua.idzo.resource.dto.song.response.DeleteSongResponse;
@@ -85,7 +86,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     private static CreateSongRequest buildCreateSongRequest(Integer resourceId, byte[] resourceBytes) {
-        SongMetadataExtractor metadataExtractor = new SongMetadataExtractor(resourceBytes);
+        MetadataExtractor metadataExtractor = MetadataExtractor.getExtractor(resourceBytes);
         return new CreateSongRequest(resourceId,
                 metadataExtractor.getName(), metadataExtractor.getArtist(), metadataExtractor.getAlbum(),
                 metadataExtractor.getDuration(), metadataExtractor.getYear());

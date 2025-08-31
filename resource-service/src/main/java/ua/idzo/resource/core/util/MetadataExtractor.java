@@ -1,8 +1,4 @@
-package ua.idzo.resource.core.service.impl;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.Arrays;
+package ua.idzo.resource.core.util;
 
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.Property;
@@ -12,12 +8,20 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 
-public class SongMetadataExtractor {
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.Arrays;
+
+public class MetadataExtractor {
 
     private final Metadata metadata;
 
-    public SongMetadataExtractor(byte[] fileData) {
-        this.metadata = new Metadata();
+    private MetadataExtractor(Metadata metadata) {
+        this.metadata = metadata;
+    }
+
+    public static MetadataExtractor getExtractor(byte[] fileData) {
+        Metadata metadata = new Metadata();
         AutoDetectParser parser = new AutoDetectParser();
         BodyContentHandler handler = new BodyContentHandler(-1);
 
@@ -26,6 +30,8 @@ public class SongMetadataExtractor {
         } catch (Exception e) {
             throw new RuntimeException("Failed at parsing file metadata", e);
         }
+
+        return new MetadataExtractor(metadata);
     }
 
     public String getName() {
