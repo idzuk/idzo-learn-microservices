@@ -6,7 +6,7 @@ import ua.idzo.resource.core.entity.ResourceEntity;
 
 public interface ResourceService {
 
-    ResourceEntity getResource(Integer id);
+    byte[] getResourceData(Integer id);
 
     ResourceEntity uploadResource(byte[] data);
 

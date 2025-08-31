@@ -16,5 +16,5 @@ import lombok.Setter;
 public class ResourceEntity extends BaseIntegerAutoIncrementEntity {
 
     @Column(nullable = false)
-    private byte[] data;
+    private String location;
 }

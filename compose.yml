@@ -1,4 +1,16 @@
 services:
+  localstack:
+    image: localstack/localstack
+    container_name: resource-storage
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - DEFAULT_REGION=us-east-1
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
   resource-db:
     image: postgres:16-alpine
     container_name: resource-db

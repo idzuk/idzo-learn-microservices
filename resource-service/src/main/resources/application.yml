@@ -9,6 +9,16 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME:user}
     password: ${SPRING_DATASOURCE_PASSWORD:password}
 
+file-storage:
+  aws:
+    region: us-east-1
+    credentials:
+      access-key: test
+      secret-key: test
+    s3:
+      endpoint: http://localhost:4566
+      bucket-name: your-music-bucket
+
 song:
   service-name: ${SONG_SERVICE_NAME:song-service}
 

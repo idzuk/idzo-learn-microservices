@@ -19,6 +19,7 @@
         <java.version>17</java.version>
         <tika.parsers.version>1.17</tika.parsers.version>
         <spring-cloud.version>2023.0.3</spring-cloud.version>
+        <awssdk.s3.version>2.20.43</awssdk.s3.version>
     </properties>
 
     <dependencyManagement>
@@ -64,11 +65,18 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!--FILE STORAGE-->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${awssdk.s3.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
             <version>${tika.parsers.version}</version>
         </dependency>
+
 
         <dependency>
             <groupId>org.projectlombok</groupId>

@@ -1,4 +1,4 @@
 CREATE TABLE resource (
     id   SERIAL PRIMARY KEY,
-    data BYTEA NOT NULL
+    location VARCHAR(255) NOT NULL
 );
