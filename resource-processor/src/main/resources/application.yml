@@ -3,4 +3,37 @@ server:
 
 spring:
   application:
-    name: resource-processor
+    name: resource-processor-service
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 5000
+          max-attempts: 3
+          max-interval: 10000
+          multiplier: 2.0
+
+
+resource-processor:
+  queue:
+    process-resource:
+      inbound: resource.process.inbound
+
+song:
+  service-name: ${SONG_SERVICE_NAME:song-service}
+
+resource:
+  service-name: ${RESOURCE_SERVICE_NAME:resource-service}
+
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${random.uuid}
+  client:
+    registry-fetch-interval-seconds: 5
+    service-url:
+      defaultZone: ${EUREKA_SERVER:http://localhost:8080/eureka}
