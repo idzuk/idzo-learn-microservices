@@ -79,7 +79,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ua.idzo.processor.ResourceProcessorApplication</mainClass>
+                    <mainClass>ua.idzo.resource.processor.ResourceProcessorApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>
