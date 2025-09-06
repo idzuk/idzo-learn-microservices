@@ -1,7 +1,9 @@
 package ua.idzo.resource.core.service;
 
+import ua.idzo.resource.core.dto.UploadFileDTO;
+
 public interface FileStorage {
-    void uploadFile(String key, byte[] file);
+    UploadFileDTO uploadFile(String key, byte[] file);
 
     byte[] downloadFile(String key);
 
