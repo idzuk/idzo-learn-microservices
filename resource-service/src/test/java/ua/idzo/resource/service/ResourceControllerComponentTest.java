@@ -1,6 +1,7 @@
 package ua.idzo.resource.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import ua.idzo.resource.core.util.TransactionUtil;
 import ua.idzo.resource.dto.response.UploadResourceResponse;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isA;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -96,6 +98,11 @@ class ResourceControllerComponentTest {
         s3Client.createBucket(builder -> builder.bucket(BUCKET_NAME));
     }
 
+    @AfterEach
+    void tearDown() {
+        resourceRepository.deleteAll();
+    }
+
     @Test
     void uploadResource_shouldReturnOkAndSaveResource() throws Exception {
         // --- GIVEN ---
@@ -112,7 +119,7 @@ class ResourceControllerComponentTest {
                         .contentType(MediaType.valueOf("audio/mpeg"))
                         .content(testData))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(1)));
+                .andExpect(jsonPath("$.id", isA(Integer.class)));
 
         assertEquals(1, resourceRepository.count());
         ResourceEntity savedEntity = resourceRepository.findAll().get(0);
