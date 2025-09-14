@@ -8,7 +8,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ua.idzo.resource.core.entity.ResourceEntity;
 import ua.idzo.resource.core.mapper.Mapper;
-import ua.idzo.resource.core.service.FileStorage;
 import ua.idzo.resource.core.service.ResourceService;
 import ua.idzo.resource.core.util.FileUtil;
 import ua.idzo.resource.dto.response.DeleteResourcesResponse;
@@ -25,7 +24,6 @@ import java.util.Set;
 public class ResourceRestController {
 
     private final ResourceService resourceService;
-    private final FileStorage fileStorage;
 
     @GetMapping("/{id}")
     public ResponseEntity<byte[]> getResource(

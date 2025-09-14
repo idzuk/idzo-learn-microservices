@@ -1,4 +1,4 @@
-package ua.idzo.resource.core.util;
+package ua.idzo.resource.processor.core.service;
 
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.Property;

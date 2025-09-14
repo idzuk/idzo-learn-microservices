@@ -1,5 +1,19 @@
 services:
 
+  #  MESSAGE BROKER
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq-broker
+    ports:
+      - "5672:5672"   # Port for AMQP protocol
+      - "15672:15672" # Port for Management UI
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    volumes:
+      - "${RABBITMQ_VOLUME_DIR:-./rabbitmq_data}:/var/lib/rabbitmq"
+
+
   #  FILE STORAGES
   localstack:
     image: localstack/localstack
@@ -71,10 +85,14 @@ services:
       - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
       - AWS_SECRET_KEY=${AWS_SECRET_KEY}
       - AWS_S3_URL=${AWS_S3_URL}
-      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
     depends_on:
       - resource-db
       - localstack
+      - rabbitmq
       - eureka-server
 
   #  SONG SERVICE
@@ -95,14 +113,21 @@ services:
       - eureka-server
 
   #  RESOURCE PROCESSOR
-  resource-processor:
+  resource-processor-service:
     build:
       context: ./resource-processor
-    container_name: resource-processor
+    container_name: resource-processor-service
     ports:
       - "8091:8091"
     environment:
       - SERVER_PORT=8091
+      - SONG_SERVICE_NAME=${SONG_SERVICE_NAME}
+      - RESOURCE_SERVICE_NAME=${RESOURCE_SERVICE_NAME}
+      - EUREKA_SERVER=${EUREKA_SERVER}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
     depends_on:
-      - localstack
+      - rabbitmq
       - eureka-server

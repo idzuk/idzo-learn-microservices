@@ -8,6 +8,7 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import ua.idzo.resource.core.config.properties.AWSProperties;
+import ua.idzo.resource.core.dto.UploadFileDTO;
 import ua.idzo.resource.core.service.FileStorage;
 
 @Service
@@ -18,13 +19,14 @@ public class S3FileStorage implements FileStorage {
     private final AWSProperties awsProperties;
 
     @Override
-    public void uploadFile(String key, byte[] file) {
+    public UploadFileDTO uploadFile(String key, byte[] file) {
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(awsProperties.getAws().getS3().getBucketName())
                 .key(key)
                 .build();
 
         s3Client.putObject(request, RequestBody.fromBytes(file));
+        return new UploadFileDTO(key);
     }
 
     @Override

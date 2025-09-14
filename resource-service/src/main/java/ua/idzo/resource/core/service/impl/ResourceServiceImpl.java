@@ -5,14 +5,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.idzo.resource.core.config.SongFeignClient;
+import ua.idzo.resource.core.dto.UploadFileDTO;
 import ua.idzo.resource.core.entity.ResourceEntity;
 import ua.idzo.resource.core.exception.NotFoundRuntimeException;
 import ua.idzo.resource.core.repository.ResourceRepository;
 import ua.idzo.resource.core.service.FileStorage;
+import ua.idzo.resource.core.integration.processor.ResourceProcessor;
 import ua.idzo.resource.core.service.ResourceService;
-import ua.idzo.resource.core.util.MetadataExtractor;
-import ua.idzo.resource.dto.song.request.CreateSongRequest;
-import ua.idzo.resource.dto.song.response.CreateSongResponse;
+import ua.idzo.resource.core.util.TransactionUtil;
 import ua.idzo.resource.dto.song.response.DeleteSongResponse;
 
 import java.util.List;
@@ -27,6 +27,7 @@ public class ResourceServiceImpl implements ResourceService {
     private final SongFeignClient songFeignClient;
     private final ResourceRepository resourceRepository;
     private final FileStorage fileStorage;
+    private final ResourceProcessor resourceProcessor;
 
     @Override
     public byte[] getResourceData(Integer id) {
@@ -42,16 +43,11 @@ public class ResourceServiceImpl implements ResourceService {
         ResourceEntity resource = new ResourceEntity();
 
         try {
-            fileStorage.uploadFile(s3Key, data);
-            resource.setLocation(s3Key);
+            UploadFileDTO uploadedFile = fileStorage.uploadFile(s3Key, data);
+            resource.setLocation(uploadedFile.filepath());
             resourceRepository.save(resource);
 
-            CreateSongRequest songRequest = buildCreateSongRequest(resource.getId(), data);
-            ResponseEntity<CreateSongResponse> song = songFeignClient.createSong(songRequest);
-            if (!song.getStatusCode().is2xxSuccessful()) {
-                throw new RuntimeException("Something went wrong at creating song metadata!");
-            }
-
+            TransactionUtil.runAfterCommit(() -> resourceProcessor.processResource(resource));
         } catch (Exception e) {
             fileStorage.deleteFile(s3Key);
         }
@@ -83,12 +79,5 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public boolean isExists(Integer id) {
         return resourceRepository.existsById(id);
-    }
-
-    private static CreateSongRequest buildCreateSongRequest(Integer resourceId, byte[] resourceBytes) {
-        MetadataExtractor metadataExtractor = MetadataExtractor.getExtractor(resourceBytes);
-        return new CreateSongRequest(resourceId,
-                metadataExtractor.getName(), metadataExtractor.getArtist(), metadataExtractor.getAlbum(),
-                metadataExtractor.getDuration(), metadataExtractor.getYear());
     }
 }
