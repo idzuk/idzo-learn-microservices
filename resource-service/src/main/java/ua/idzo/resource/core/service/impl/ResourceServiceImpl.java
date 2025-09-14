@@ -28,6 +28,7 @@ public class ResourceServiceImpl implements ResourceService {
     private final ResourceRepository resourceRepository;
     private final FileStorage fileStorage;
     private final ResourceProcessor resourceProcessor;
+    private final TransactionUtil transactionUtil;
 
     @Override
     public byte[] getResourceData(Integer id) {
@@ -47,7 +48,7 @@ public class ResourceServiceImpl implements ResourceService {
             resource.setLocation(uploadedFile.filepath());
             resourceRepository.save(resource);
 
-            TransactionUtil.runAfterCommit(() -> resourceProcessor.processResource(resource));
+            transactionUtil.runAfterCommit(() -> resourceProcessor.processResource(resource));
         } catch (Exception e) {
             fileStorage.deleteFile(s3Key);
         }
