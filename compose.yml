@@ -12,7 +12,12 @@ services:
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
     volumes:
       - "${RABBITMQ_VOLUME_DIR:-./rabbitmq_data}:/var/lib/rabbitmq"
-
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   #  FILE STORAGES
   localstack:
@@ -29,6 +34,12 @@ services:
       - ./init-scripts/resource-s3:/etc/localstack/init/ready.d
       - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
+    healthcheck:
+      test: [ "CMD-SHELL", "awslocal s3 ls >/dev/null 2>&1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 60s
 
   #  DATABASES
   resource-db:
@@ -43,6 +54,12 @@ services:
     volumes:
       - ./init-scripts/resource-db/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${RESOURCE_DB} -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   song-db:
     image: postgres:16-alpine
@@ -56,6 +73,12 @@ services:
     volumes:
       - ./init-scripts/song-db/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${SONG_DB} -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   #  EUREKA SERVER
   eureka-server:
@@ -66,6 +89,12 @@ services:
       - "8761:8761"
     environment:
       - SERVER_PORT=8761
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health/readiness | grep -q '\"status\":\"UP\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
 
   #  RESOURCE SERVICE
   resource-service:
@@ -90,10 +119,20 @@ services:
       - RABBITMQ_HOST=${RABBITMQ_HOST}
       - RABBITMQ_PORT=${RABBITMQ_PORT}
     depends_on:
-      - resource-db
-      - localstack
-      - rabbitmq
-      - eureka-server
+      rabbitmq:
+        condition: service_healthy
+      resource-db:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health/readiness | grep -q '\"status\":\"UP\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
 
   #  SONG SERVICE
   song-service:
@@ -109,8 +148,16 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - EUREKA_SERVER=${EUREKA_SERVER}
     depends_on:
-      - song-db
-      - eureka-server
+      song-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health/readiness | grep -q '\"status\":\"UP\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
 
   #  RESOURCE PROCESSOR
   resource-processor-service:
@@ -129,5 +176,13 @@ services:
       - RABBITMQ_HOST=${RABBITMQ_HOST}
       - RABBITMQ_PORT=${RABBITMQ_PORT}
     depends_on:
-      - rabbitmq
-      - eureka-server
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8091/actuator/health/readiness | grep -q '\"status\":\"UP\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
